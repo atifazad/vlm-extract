@@ -81,11 +81,12 @@ class TestOllamaIntegration:
 
     def test_ollama_supported_formats(self):
         """Test supported formats list."""
-        provider_config = config.get_provider_config("ollama")
-        provider = OllamaProvider(provider_config)
+        from vlm_extract.utils import get_supported_formats
         
-        formats = provider.get_supported_formats()
-        assert isinstance(formats, list)
-        assert "PNG" in formats
-        assert "JPEG" in formats
-        assert "GIF" in formats 
+        formats = get_supported_formats()
+        assert isinstance(formats, dict)
+        assert "images" in formats
+        assert "documents" in formats
+        assert "PNG" in formats["images"]
+        assert "JPEG" in formats["images"]
+        assert "GIF" in formats["images"] 

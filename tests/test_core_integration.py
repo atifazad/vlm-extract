@@ -55,9 +55,9 @@ class TestCoreIntegration:
             await extract_text(test_image_path, provider="unsupported")
 
     @pytest.mark.asyncio
-    async def test_extract_text_openai_not_implemented(self, test_image_path):
-        """Test that OpenAI provider is not yet implemented."""
-        with pytest.raises(NotImplementedError, match="OpenAI provider not yet implemented"):
+    async def test_extract_text_openai_missing_api_key(self, test_image_path):
+        """Test that OpenAI provider requires API key."""
+        with pytest.raises(ValueError, match="OpenAI API key is required"):
             await extract_text(test_image_path, provider=Provider.OPENAI)
 
     @pytest.mark.asyncio
