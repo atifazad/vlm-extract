@@ -87,6 +87,7 @@ pytest
 
 # Run with coverage
 pytest --cov=vlm_extract --cov-report=term-missing
+```
 
 
 ## License
