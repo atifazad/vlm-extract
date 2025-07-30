@@ -31,6 +31,12 @@ class TestCrossProviderCompatibility:
         try:
             result = await extract_text(test_image_path, provider=Provider.OPENAI)
             assert isinstance(result, str)
+        except ValueError as e:
+            # Handle invalid API key error
+            if "Invalid OpenAI API key" in str(e):
+                pytest.skip(f"OpenAI API key is invalid: {e}")
+            else:
+                raise
         except Exception as e:
             error_msg = str(e).lower()
             if any(keyword in error_msg for keyword in ["connection", "timeout", "rate limit"]):

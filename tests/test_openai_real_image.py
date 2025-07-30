@@ -22,6 +22,18 @@ async def test_openai_with_real_image(test_image_path):
         print(f"Extracted text: {result}")
         assert isinstance(result, str)
         print("✅ OpenAI test with real image PASSED")
+    except ValueError as e:
+        # Handle invalid API key error
+        if "Invalid OpenAI API key" in str(e):
+            print(f"❌ OpenAI test failed: {e}")
+            pytest.skip(f"OpenAI API key is invalid: {e}")
+        else:
+            print(f"❌ OpenAI test failed: {e}")
+            raise
     except Exception as e:
         print(f"❌ OpenAI test failed: {e}")
-        raise 
+        error_msg = str(e).lower()
+        if any(keyword in error_msg for keyword in ["connection", "timeout", "rate limit"]):
+            pytest.skip(f"OpenAI API not accessible: {e}")
+        else:
+            raise 

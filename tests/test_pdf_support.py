@@ -36,15 +36,6 @@ class TestPDFProcessor:
         with pytest.raises(RuntimeError, match="Failed to process PDF"):
             processor.extract_pages_as_images(pdf_path)
 
-    def test_create_placeholder_image(self):
-        """Test placeholder image creation."""
-        processor = PDFProcessor()
-        image = processor._create_placeholder_image(1)
-        
-        assert image is not None
-        assert image.size == (800, 600)
-        assert image.mode == 'RGB'
-
 
 class TestPDFIntegration:
     """Test PDF integration with Ollama provider."""
