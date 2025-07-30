@@ -6,10 +6,12 @@ A simple Python library to extract text from documents and images using Vision L
 
 - **Async-first API**: Simple `await extract_text(file_path, provider="ollama")` function
 - **Multiple VLM Providers**: Ollama (local), OpenAI (cloud), LocalAI, and extensible architecture
-- **File Format Support**: Images (PNG, JPEG, GIF, BMP, WebP, TIFF, HEIC) and documents (PDF, DOCX, PPTX, XLSX, EPUB, HTML)
-- **Environment-based Configuration**: No hardcoded values, everything configurable via `.env`
+- **File Format Support**: Images (PNG, JPEG, JPG, GIF, BMP, WebP, TIFF, HEIC) and documents (PDF, DOCX, PPTX, XLSX, EPUB, HTML)
+- **Environment-based Configuration**: Provider settings configurable via `.env`
 - **Batch Processing**: Handle multiple files concurrently
 - **Error Resilience**: Retry logic and graceful failure handling
+- **Comprehensive Testing**: 85% test coverage with integration tests
+- **Terminal Command**: Simple command-line interface for file processing
 
 ## Quick Start
 
@@ -24,17 +26,22 @@ A simple Python library to extract text from documents and images using Vision L
    # Edit .env with your preferred provider settings
    ```
 
-3. **Extract text**:
-   ```python
-   import asyncio
-   from vlm_extract import extract_text, Provider
+3. **Terminal Usage**
 
-   async def main():
-       text = await extract_text("path/to/document.png", provider=Provider.OLLAMA)
-       print(text)
+Use the built-in terminal command for quick text extraction:
 
-   asyncio.run(main())
-   ```
+```bash
+# Extract text from a single file
+python examples/extract_text.py image.png
+python examples/extract_text.py document.jpg
+python examples/extract_text.py /path/to/your/file.png
+```
+
+The command shows:
+- Current configuration (provider, model, URL)
+- Progress indication
+- Extracted text in clean format
+- Error messages with troubleshooting tips
 
 ## Configuration
 
@@ -52,10 +59,20 @@ VLM_MAX_RETRIES=3
 
 ## Supported Providers
 
-- **Ollama**: Local models (llava, bakllava, etc.)
-- **OpenAI**: Cloud models (gpt-4-vision-preview)
-- **LocalAI**: Local models with LocalAI server
+- **Ollama**: Local models (llava, bakllava, qwen2.5vl, etc.)
+- **OpenAI**: Cloud models (gpt-4-vision-preview) - Coming soon
+- **LocalAI**: Local models with LocalAI server - Coming soon
 - **Extensible**: Easy to add more providers
+
+
+
+### Configuration Access
+```python
+from vlm_extract import config
+
+print(f"Current provider: {config.vlm.provider.value}")
+print(f"Model: {config.vlm.model}")
+```
 
 ## Development
 
@@ -68,9 +85,9 @@ uv sync
 # Run tests
 pytest
 
-# Install in development mode
-uv pip install -e .
-```
+# Run with coverage
+pytest --cov=vlm_extract --cov-report=term-missing
+
 
 ## License
 
