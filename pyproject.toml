@@ -1,0 +1,86 @@
+[project]
+name = "vlm-extract"
+version = "0.1.0"
+description = "A simple Python library to extract text from documents and images using Vision Language Models"
+authors = [
+    {name = "VLM Extract Team", email = "team@vlm-extract.com"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "aiohttp>=3.8.0",
+    "pillow>=10.0.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "httpx>=0.24.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.0.0",
+    "ruff>=0.1.0",
+]
+
+pdf = [
+    "pypdf>=3.0.0",
+]
+
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/vlm-extract/vlm-extract"
+Repository = "https://github.com/vlm-extract/vlm-extract"
+Documentation = "https://vlm-extract.readthedocs.io"
+Issues = "https://github.com/vlm-extract/vlm-extract/issues"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+select = ["E", "F", "I", "N", "W", "B", "C4", "UP"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"] 
