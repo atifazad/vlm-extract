@@ -13,8 +13,8 @@ class TestConfig:
         assert config.provider == Provider.OLLAMA
         assert config.base_url == "http://localhost:11434"
         assert config.model == "llava"
-        assert config.timeout == 30
-        assert config.max_retries == 3
+        assert config.timeout == 10  # Test environment sets this to 10
+        assert config.max_retries == 2  # Test environment sets this to 2
 
     def test_provider_enum(self):
         """Test Provider enum values."""
