@@ -30,12 +30,8 @@ class VLMConfig(BaseModel):
 class FileConfig(BaseModel):
     """File processing configuration."""
     max_file_size_mb: int = Field(default_factory=lambda: int(os.getenv("MAX_FILE_SIZE_MB", "50")))
-    supported_image_formats: List[str] = Field(
-        default_factory=lambda: os.getenv("SUPPORTED_IMAGE_FORMATS", "PNG,JPEG,GIF,BMP,WEBP,TIFF,HEIC").split(",")
-    )
-    supported_document_formats: List[str] = Field(
-        default_factory=lambda: os.getenv("SUPPORTED_DOCUMENT_FORMATS", "PDF,DOCX,PPTX,XLSX,EPUB,HTML").split(",")
-    )
+    supported_image_formats: List[str] = Field(default=["PNG", "JPEG", "JPG", "GIF", "BMP", "WEBP", "TIFF", "HEIC"])
+    supported_document_formats: List[str] = Field(default=["PDF", "DOCX", "PPTX", "XLSX", "EPUB", "HTML"])
 
 
 class BatchConfig(BaseModel):
