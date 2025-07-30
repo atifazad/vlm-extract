@@ -12,6 +12,7 @@ A simple Python library to extract text from documents and images using Vision L
 - **Error Resilience**: Retry logic and graceful failure handling
 - **Comprehensive Testing**: 85% test coverage with integration tests
 - **Terminal Command**: Simple command-line interface for file processing
+- **PDF Support**: Extract text from PDF documents (multi-page support)
 
 ## Quick Start
 
@@ -34,6 +35,7 @@ Use the built-in terminal command for quick text extraction:
 # Extract text from a single file
 python examples/extract_text.py image.png
 python examples/extract_text.py document.jpg
+python examples/extract_text.py document.pdf
 python examples/extract_text.py /path/to/your/file.png
 ```
 
@@ -64,7 +66,26 @@ VLM_MAX_RETRIES=3
 - **LocalAI**: Local models with LocalAI server - Coming soon
 - **Extensible**: Easy to add more providers
 
+## Examples
 
+### Basic Usage
+```python
+from vlm_extract import extract_text, Provider
+
+# Extract text from an image
+text = await extract_text("image.png", provider=Provider.OLLAMA)
+
+# Extract text from a PDF
+text = await extract_text("document.pdf", provider=Provider.OLLAMA)
+```
+
+### Batch Processing
+```python
+from vlm_extract import extract_text_batch
+
+# Process multiple files
+results = await extract_text_batch(["image1.png", "document.pdf"], provider=Provider.OLLAMA)
+```
 
 ### Configuration Access
 ```python
@@ -87,8 +108,10 @@ pytest
 
 # Run with coverage
 pytest --cov=vlm_extract --cov-report=term-missing
-```
 
+# Install in development mode
+uv pip install -e .
+```
 
 ## License
 

@@ -55,7 +55,9 @@ class Config(BaseModel):
                 raise ValueError(f"Unsupported provider: {provider}")
         
         provider = provider or self.vlm.provider
-        return {
+        
+        # Base configuration
+        config = {
             "provider": provider.value,
             "base_url": self.vlm.base_url,
             "api_key": self.vlm.api_key,
@@ -63,6 +65,12 @@ class Config(BaseModel):
             "timeout": self.vlm.timeout,
             "max_retries": self.vlm.max_retries,
         }
+        
+        # Provider-specific configuration
+        if provider == Provider.OPENAI:
+            config["api_key"] = os.getenv("OPENAI_API_KEY", "")
+        
+        return config
 
 
 # Global configuration instance

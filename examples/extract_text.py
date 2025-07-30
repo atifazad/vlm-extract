@@ -29,7 +29,8 @@ async def extract_text_from_file(file_path: str):
     
     try:
         print("🔄 Extracting text...")
-        text = await extract_text(path, provider=Provider.OLLAMA)
+        # Use the configured provider from environment
+        text = await extract_text(path)
         
         if text.strip():
             print("✅ Text extracted successfully:")
@@ -42,8 +43,13 @@ async def extract_text_from_file(file_path: str):
     except Exception as e:
         print(f"❌ Error: {e}")
         print("\nTroubleshooting:")
-        print("1. Make sure Ollama is running: ollama serve")
-        print("2. Make sure the model is pulled: ollama pull llava")
+        provider = config.vlm.provider.value
+        if provider == "ollama":
+            print("1. Make sure Ollama is running: ollama serve")
+            print("2. Make sure the model is pulled: ollama pull llava")
+        elif provider == "openai":
+            print("1. Make sure OPENAI_API_KEY is set in your .env file")
+            print("2. Make sure you have sufficient API credits")
         print("3. Check if the image contains readable text")
         print("4. Verify the file format is supported")
         sys.exit(1)

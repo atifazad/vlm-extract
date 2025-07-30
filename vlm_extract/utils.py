@@ -1,8 +1,10 @@
 """Utility functions for file handling and format detection."""
 
+import io
 from pathlib import Path
-from typing import List
+from typing import List, Union
 from .config import config
+from .pdf_processor import PDFProcessor
 
 
 def get_file_extension(file_path: Path) -> str:
@@ -62,4 +64,97 @@ def get_supported_formats() -> dict[str, List[str]]:
     return {
         "images": config.file.supported_image_formats,
         "documents": config.file.supported_document_formats,
-    } 
+    }
+
+
+async def process_file_for_vlm(file_path: Path) -> List[bytes]:
+    """
+    Process file and return list of image data ready for VLM processing.
+    
+    Args:
+        file_path: Path to the file to process
+        
+    Returns:
+        List of image data bytes (one for images, multiple for PDFs)
+        
+    Raises:
+        ValueError: If file format is not supported
+        RuntimeError: If processing fails
+    """
+    # Validate file first
+    is_valid, error_msg = validate_file(file_path)
+    if not is_valid:
+        raise ValueError(error_msg)
+    
+    if is_image_file(file_path):
+        # Single image file
+        image_data = await load_image_data(file_path)
+        return [image_data]
+    
+    elif is_document_file(file_path):
+        # Document file (PDF, DOCX, PPTX, XLSX, EPUB, HTML)
+        if file_path.suffix.upper() == ".PDF":
+            return await _process_pdf_for_vlm(file_path)
+        else:
+            return await _process_document_for_vlm(file_path)
+    
+    else:
+        raise ValueError(f"Unsupported file format: {file_path.suffix}")
+
+
+async def _process_pdf_for_vlm(pdf_path: Path) -> List[bytes]:
+    """Process PDF file and return list of page images as bytes."""
+    pdf_processor = PDFProcessor()
+    
+    try:
+        # Get PDF pages as images
+        page_images = pdf_processor.extract_pages_as_images(pdf_path)
+        
+        if not page_images:
+            raise RuntimeError("No pages could be extracted from PDF")
+        
+        # Convert PIL images to bytes
+        image_data_list = []
+        for page_num, image in page_images:
+            try:
+                # Convert PIL image to bytes
+                img_byte_arr = io.BytesIO()
+                image.save(img_byte_arr, format='PNG')
+                image_data_list.append(img_byte_arr.getvalue())
+            except Exception as e:
+                raise RuntimeError(f"Failed to convert page {page_num} to image: {e}")
+        
+        return image_data_list
+        
+    except Exception as e:
+        raise RuntimeError(f"Failed to process PDF {pdf_path}: {e}")
+
+
+async def _process_document_for_vlm(file_path: Path) -> List[bytes]:
+    """Process document file and return list of page images as bytes."""
+    from .document_processor import DocumentProcessor
+    
+    document_processor = DocumentProcessor()
+    
+    try:
+        # Get document pages as images
+        page_images = document_processor.convert_document_to_images(file_path)
+        
+        if not page_images:
+            raise RuntimeError("No pages could be extracted from document")
+        
+        # Convert PIL images to bytes
+        image_data_list = []
+        for page_num, image in page_images:
+            try:
+                # Convert PIL image to bytes
+                img_byte_arr = io.BytesIO()
+                image.save(img_byte_arr, format='PNG')
+                image_data_list.append(img_byte_arr.getvalue())
+            except Exception as e:
+                raise RuntimeError(f"Failed to convert page {page_num} to image: {e}")
+        
+        return image_data_list
+        
+    except Exception as e:
+        raise RuntimeError(f"Failed to process document {file_path}: {e}") 

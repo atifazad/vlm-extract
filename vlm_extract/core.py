@@ -47,8 +47,8 @@ async def extract_text(
     if provider == Provider.OLLAMA:
         provider_instance = OllamaProvider(provider_config)
     elif provider == Provider.OPENAI:
-        # TODO: Implement OpenAI provider
-        raise NotImplementedError("OpenAI provider not yet implemented")
+        from .providers.openai import OpenAIProvider
+        provider_instance = OpenAIProvider(provider_config)
     elif provider == Provider.LOCALAI:
         # TODO: Implement LocalAI provider
         raise NotImplementedError("LocalAI provider not yet implemented")

@@ -26,9 +26,7 @@ class BaseProvider(ABC):
         """Validate if the file can be processed by this provider."""
         return file_path.exists() and file_path.is_file()
 
-    def get_supported_formats(self) -> list[str]:
-        """Get list of supported file formats."""
-        return []
+
 
     async def health_check(self) -> bool:
         """Check if the provider is healthy and available."""

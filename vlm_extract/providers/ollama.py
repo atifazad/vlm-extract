@@ -2,10 +2,9 @@
 
 import base64
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, List
 import httpx
 from .base import BaseProvider
-from ..utils import validate_file, load_image_data, is_image_file
 
 
 class OllamaProvider(BaseProvider):
@@ -14,26 +13,35 @@ class OllamaProvider(BaseProvider):
     def __init__(self, config: Dict[str, Any]):
         """Initialize Ollama provider with configuration."""
         super().__init__(config)
-        self.base_url = config.get("base_url")
-        self.model = config.get("model")
+        self.base_url = config.get("base_url", "http://localhost:11434")
+        self.model = config.get("model", "llava")
         self.timeout = config.get("timeout", 30)
         self.max_retries = config.get("max_retries", 3)
 
     async def extract_text(self, file_path: Path) -> str:
         """Extract text from a file using Ollama."""
-        # Validate file
-        is_valid, error_msg = validate_file(file_path)
-        if not is_valid:
-            raise ValueError(error_msg)
-
-        # Load image data
-        if is_image_file(file_path):
-            image_data = await load_image_data(file_path)
-            return await self.extract_text_from_image(image_data)
-        else:
-            # For now, only support images
-            # TODO: Add PDF and document support
-            raise NotImplementedError(f"File format not yet supported: {file_path.suffix}")
+        from ..utils import process_file_for_vlm
+        
+        # Process file to get image data
+        image_data_list = await process_file_for_vlm(file_path)
+        
+        # Extract text from each image
+        all_text = []
+        for i, image_data in enumerate(image_data_list):
+            try:
+                page_text = await self.extract_text_from_image(image_data)
+                if page_text.strip():
+                    if len(image_data_list) > 1:
+                        all_text.append(f"Page {i + 1}:\n{page_text}")
+                    else:
+                        all_text.append(page_text)
+            except Exception as e:
+                if len(image_data_list) > 1:
+                    all_text.append(f"Page {i + 1}: Error extracting text - {e}")
+                else:
+                    raise e
+        
+        return "\n\n".join(all_text) if all_text else "No text could be extracted from PDF"
 
     async def extract_text_from_image(self, image_data: bytes) -> str:
         """Extract text from image data using Ollama."""
@@ -79,10 +87,6 @@ class OllamaProvider(BaseProvider):
                 if attempt == self.max_retries - 1:
                     raise RuntimeError(f"Failed to extract text from image: {str(e)}")
                 continue
-
-    def get_supported_formats(self) -> list[str]:
-        """Get list of supported file formats."""
-        return ["PNG", "JPEG", "GIF", "BMP", "WEBP", "TIFF", "HEIC"]
 
     async def health_check(self) -> bool:
         """Check if Ollama server is healthy."""
