@@ -94,7 +94,16 @@ async def process_file_for_vlm(file_path: Path) -> List[bytes]:
     elif is_document_file(file_path):
         # Document file (PDF only)
         if file_path.suffix.upper() == ".PDF":
-            return await _process_pdf_for_vlm(file_path)
+            # Use smart PDF processing
+            result, method = await process_pdf_smart(file_path)
+            
+            if method == "pymupdf":
+                # PyMuPDF already extracted text, return empty list to skip VLM
+                # The text will be returned directly by the provider
+                return []
+            else:
+                # VLM processing needed, return image data
+                return result
         else:
             raise ValueError(f"Unsupported document format: {file_path.suffix}")
     
@@ -128,6 +137,29 @@ async def _process_pdf_for_vlm(pdf_path: Path) -> List[bytes]:
         
     except Exception as e:
         raise RuntimeError(f"Failed to process PDF {pdf_path}: {e}")
+
+
+async def process_pdf_smart(pdf_path: Path) -> tuple[str, str]:
+    """
+    Smart PDF processing: use PyMuPDF for text-based PDFs, VLM for image-based PDFs.
+    
+    Args:
+        pdf_path: Path to the PDF file
+        
+    Returns:
+        Tuple of (extracted_text, processing_method)
+    """
+    pdf_processor = PDFProcessor()
+    
+    # Check if PDF is text-based
+    if pdf_processor.is_text_based_pdf(pdf_path):
+        # Fast path: extract text directly with PyMuPDF
+        text = pdf_processor.extract_text_with_pymupdf(pdf_path)
+        return text, "pymupdf"
+    else:
+        # Fallback: convert to images for VLM processing
+        image_data_list = await _process_pdf_for_vlm(pdf_path)
+        return image_data_list, "vlm"
 
 
 async def _process_document_for_vlm(file_path: Path) -> List[bytes]:

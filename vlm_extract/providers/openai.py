@@ -21,31 +21,6 @@ class OpenAIProvider(BaseProvider):
         if not self.api_key:
             raise ValueError("OpenAI API key is required. Set OPENAI_API_KEY environment variable.")
 
-    async def extract_text(self, file_path: Path) -> str:
-        """Extract text from a file using OpenAI."""
-        from ..utils import process_file_for_vlm
-        
-        # Process file to get image data
-        image_data_list = await process_file_for_vlm(file_path)
-        
-        # Extract text from each image
-        all_text = []
-        for i, image_data in enumerate(image_data_list):
-            try:
-                page_text = await self.extract_text_from_image(image_data)
-                if page_text.strip():
-                    if len(image_data_list) > 1:
-                        all_text.append(f"Page {i + 1}:\n{page_text}")
-                    else:
-                        all_text.append(page_text)
-            except Exception as e:
-                if len(image_data_list) > 1:
-                    all_text.append(f"Page {i + 1}: Error extracting text - {e}")
-                else:
-                    raise e
-        
-        return "\n\n".join(all_text) if all_text else "No text could be extracted"
-
     async def extract_text_from_image(self, image_data: bytes) -> str:
         """Extract text from image data using OpenAI."""
         # Encode image to base64
@@ -104,9 +79,7 @@ class OpenAIProvider(BaseProvider):
                         raise RuntimeError("OpenAI rate limit exceeded. Please try again later.")
                     continue
                 elif e.response.status_code == 400:
-                    error_data = e.response.json()
-                    error_msg = error_data.get("error", {}).get("message", "Bad request")
-                    raise ValueError(f"OpenAI API error: {error_msg}")
+                    raise ValueError(f"Invalid request to OpenAI: {e.response.text}")
                 else:
                     raise RuntimeError(f"OpenAI API error {e.response.status_code}: {e.response.text}")
             except Exception as e:

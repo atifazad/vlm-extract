@@ -7,6 +7,7 @@ A simple Python library to extract text from documents and images using Vision L
 - **Async-first API**: Simple `await extract_text(file_path, provider="ollama")` function
 - **Multiple VLM Providers**: Ollama (local), OpenAI (cloud), LocalAI, and extensible architecture
 - **File Format Support**: Images (PNG, JPEG, JPG, GIF, BMP, WebP, TIFF, HEIC) and documents (PDF, DOCX, PPTX, XLSX, EPUB, HTML)
+- **Smart PDF Processing**: Automatic detection and fast extraction of text-based PDFs using PyMuPDF, with VLM fallback for image-based PDFs
 - **Environment-based Configuration**: Provider settings configurable via `.env`
 - **Batch Processing**: Handle multiple files concurrently
 - **Error Resilience**: Retry logic and graceful failure handling
@@ -57,6 +58,33 @@ VLM_API_KEY=your_api_key_here
 VLM_MODEL=llava
 VLM_TIMEOUT=30
 VLM_MAX_RETRIES=3
+
+# PDF Processing Configuration
+PDF_TEXT_EXTRACTION_ENABLED=true
+PDF_MIN_TEXT_RATIO=0.1
+PDF_FALLBACK_TO_VLM=true
+```
+
+## Smart PDF Processing
+
+VLM Extract automatically optimizes PDF processing:
+
+- **Text-based PDFs**: Uses PyMuPDF for fast, accurate text extraction (~10-100x faster)
+- **Image-based PDFs**: Uses VLM for OCR processing
+- **Automatic Detection**: Intelligently chooses the best method for each PDF
+- **Transparent Fallback**: Seamlessly switches between methods as needed
+
+### PDF Processing Configuration
+
+```bash
+# Enable/disable PyMuPDF text extraction
+PDF_TEXT_EXTRACTION_ENABLED=true
+
+# Minimum text ratio to consider PDF as text-based (0.0-1.0)
+PDF_MIN_TEXT_RATIO=0.1
+
+# Fallback to VLM if PyMuPDF extraction fails
+PDF_FALLBACK_TO_VLM=true
 ```
 
 ## Supported Providers
@@ -75,7 +103,7 @@ from vlm_extract import extract_text, Provider
 # Extract text from an image
 text = await extract_text("image.png", provider=Provider.OLLAMA)
 
-# Extract text from a PDF
+# Extract text from a PDF (automatically optimized)
 text = await extract_text("document.pdf", provider=Provider.OLLAMA)
 ```
 

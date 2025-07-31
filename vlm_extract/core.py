@@ -55,8 +55,43 @@ async def extract_text(
     else:
         raise ValueError(f"Unsupported provider: {provider}")
     
-    # Extract text
-    return await provider_instance.extract_text(file_path)
+    # Check if this is a PDF that might have been processed by PyMuPDF
+    if file_path.suffix.upper() == ".PDF":
+        from .utils import process_pdf_smart
+        result, method = await process_pdf_smart(file_path)
+        
+        if method == "pymupdf":
+            # PyMuPDF already extracted text, return it directly
+            return result
+        else:
+            # VLM processing needed, use the image data
+            image_data_list = result
+            return await _extract_text_from_images(provider_instance, image_data_list)
+    else:
+        # Non-PDF file, use normal processing
+        from .utils import process_file_for_vlm
+        image_data_list = await process_file_for_vlm(file_path)
+        return await _extract_text_from_images(provider_instance, image_data_list)
+
+
+async def _extract_text_from_images(provider_instance, image_data_list: List[bytes]) -> str:
+    """Extract text from list of image data using the provider."""
+    all_text = []
+    for i, image_data in enumerate(image_data_list):
+        try:
+            page_text = await provider_instance.extract_text_from_image(image_data)
+            if page_text.strip():
+                if len(image_data_list) > 1:
+                    all_text.append(f"Page {i + 1}:\n{page_text}")
+                else:
+                    all_text.append(page_text)
+        except Exception as e:
+            if len(image_data_list) > 1:
+                all_text.append(f"Page {i + 1}: Error extracting text - {e}")
+            else:
+                raise e
+    
+    return "\n\n".join(all_text) if all_text else "No text could be extracted"
 
 
 async def extract_text_batch(

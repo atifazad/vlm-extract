@@ -72,6 +72,11 @@ class FileConfig(BaseModel):
     max_file_size_mb: int = Field(default_factory=lambda: int(os.getenv("MAX_FILE_SIZE_MB", "50")))
     supported_image_formats: List[str] = Field(default=["PNG", "JPEG", "JPG", "GIF", "BMP", "WEBP", "TIFF", "HEIC"])
     supported_document_formats: List[str] = Field(default=["PDF"])
+    
+    # PDF Processing Configuration
+    pdf_text_extraction_enabled: bool = Field(default_factory=lambda: os.getenv("PDF_TEXT_EXTRACTION_ENABLED", "true").lower() == "true")
+    pdf_min_text_ratio: float = Field(default_factory=lambda: float(os.getenv("PDF_MIN_TEXT_RATIO", "0.1")))
+    pdf_fallback_to_vlm: bool = Field(default_factory=lambda: os.getenv("PDF_FALLBACK_TO_VLM", "true").lower() == "true")
 
 
 class BatchConfig(BaseModel):

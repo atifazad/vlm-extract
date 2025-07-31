@@ -26,6 +26,8 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "pillow>=10.0.0",
     "pymupdf>=1.23.0",
+    "pypdf>=3.0.0",
+    "pdf2image>=1.16.0",
 ]
 
 [project.optional-dependencies]
@@ -83,4 +85,7 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
-python_functions = ["test_*"] 
+python_functions = ["test_*"]
+filterwarnings = [
+    "ignore::DeprecationWarning:importlib._bootstrap",
+] 
