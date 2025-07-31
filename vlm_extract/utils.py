@@ -92,11 +92,11 @@ async def process_file_for_vlm(file_path: Path) -> List[bytes]:
         return [image_data]
     
     elif is_document_file(file_path):
-        # Document file (PDF, DOCX, PPTX, XLSX, EPUB, HTML)
+        # Document file (PDF only)
         if file_path.suffix.upper() == ".PDF":
             return await _process_pdf_for_vlm(file_path)
         else:
-            return await _process_document_for_vlm(file_path)
+            raise ValueError(f"Unsupported document format: {file_path.suffix}")
     
     else:
         raise ValueError(f"Unsupported file format: {file_path.suffix}")
