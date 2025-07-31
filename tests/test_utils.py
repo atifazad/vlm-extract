@@ -44,12 +44,12 @@ class TestUtils:
     def test_is_document_file(self):
         """Test document file detection."""
         assert is_document_file(Path("test.pdf"))
-        assert is_document_file(Path("test.docx"))
-        assert is_document_file(Path("test.pptx"))
-        assert is_document_file(Path("test.xlsx"))
-        assert is_document_file(Path("test.epub"))
-        assert is_document_file(Path("test.html"))
-        
+        # Only PDF is supported for documents
+        assert not is_document_file(Path("test.docx"))
+        assert not is_document_file(Path("test.pptx"))
+        assert not is_document_file(Path("test.xlsx"))
+        assert not is_document_file(Path("test.epub"))
+        assert not is_document_file(Path("test.html"))
         assert not is_document_file(Path("test.png"))
         assert not is_document_file(Path("test.txt"))
 
@@ -185,12 +185,12 @@ class TestUtils:
         
         with patch('vlm_extract.utils.validate_file') as mock_validate:
             with patch('vlm_extract.utils.is_image_file') as mock_is_image:
-                with patch('vlm_extract.utils._process_document_for_vlm') as mock_process_doc:
+                with patch('vlm_extract.utils._process_pdf_for_vlm') as mock_process_pdf:
                     mock_validate.return_value = (True, "")
                     mock_is_image.return_value = False
-                    mock_process_doc.return_value = [test_data]
+                    mock_process_pdf.return_value = [test_data]
                     
-                    result = await process_file_for_vlm(Path("test.docx"))
+                    result = await process_file_for_vlm(Path("test.pdf"))
                     assert len(result) == 1
                     assert result[0] == test_data
 
@@ -239,11 +239,11 @@ class TestUtils:
         
         with patch('vlm_extract.utils.validate_file') as mock_validate:
             with patch('vlm_extract.utils.is_image_file') as mock_is_image:
-                with patch('vlm_extract.utils._process_document_for_vlm') as mock_process_doc:
+                with patch('vlm_extract.utils._process_pdf_for_vlm') as mock_process_pdf:
                     mock_validate.return_value = (True, "")
                     mock_is_image.return_value = False
-                    mock_process_doc.return_value = [test_data]
+                    mock_process_pdf.return_value = [test_data]
                     
-                    result = await process_file_for_vlm(Path("test.docx"))
+                    result = await process_file_for_vlm(Path("test.pdf"))
                     assert len(result) == 1
                     assert result[0] == test_data 
