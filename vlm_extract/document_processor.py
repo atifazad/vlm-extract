@@ -7,6 +7,7 @@ from PIL import Image
 import subprocess
 import tempfile
 import os
+from .config import config
 
 
 class DocumentProcessor:
@@ -14,7 +15,8 @@ class DocumentProcessor:
 
     def __init__(self):
         """Initialize document processor."""
-        self.supported_formats = ["DOCX", "PPTX", "XLSX", "EPUB", "HTML"]
+        # Get supported formats from configuration
+        self.supported_formats = config.file.supported_document_formats
 
     def convert_document_to_images(self, file_path: Path) -> List[Tuple[int, Image.Image]]:
         """
@@ -28,7 +30,9 @@ class DocumentProcessor:
         """
         extension = file_path.suffix.upper()
         
-        if extension == ".DOCX":
+        if extension == ".PDF":
+            return self._convert_pdf_to_images(file_path)
+        elif extension == ".DOCX":
             return self._convert_docx_to_images(file_path)
         elif extension == ".PPTX":
             return self._convert_pptx_to_images(file_path)
@@ -40,6 +44,15 @@ class DocumentProcessor:
             return self._convert_html_to_images(file_path)
         else:
             raise ValueError(f"Unsupported document format: {extension}")
+
+    def _convert_pdf_to_images(self, file_path: Path) -> List[Tuple[int, Image.Image]]:
+        """Convert PDF to images using PDFProcessor."""
+        try:
+            from .pdf_processor import PDFProcessor
+            pdf_processor = PDFProcessor()
+            return pdf_processor.extract_pages_as_images(file_path)
+        except Exception as e:
+            raise RuntimeError(f"Failed to convert PDF {file_path}: {e}")
 
     def _convert_docx_to_images(self, file_path: Path) -> List[Tuple[int, Image.Image]]:
         """Convert DOCX to images using pandoc and wkhtmltopdf."""
